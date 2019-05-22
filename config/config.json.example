@@ -1,0 +1,10 @@
+{
+  "ripple": {
+    "server": "wss://s2.ripple.com:443"
+  },
+  "proxy": {
+    "host": "0.0.0.0",
+    "port": 1234
+  },
+  "logLevel": 3
+}

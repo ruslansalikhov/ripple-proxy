@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  proxy:
+    build: .
+    volumes:
+      - "./config:/app/config/"
+    ports:
+      - "1234:1234"
