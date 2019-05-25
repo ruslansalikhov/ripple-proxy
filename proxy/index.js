@@ -20,33 +20,44 @@ app.use(json2csv.expressDecorator);
 app.use(cors());
 app.use(compression());
 
-app.get("/ledger/:index", function (req, res, next) {
+function errorResponse(res, err) {
+    log.error(err.error || err);
+    if (err.code && err.code.toString()[0] === "4") {
+        res.status(err.code).json({
+            result: "error",
+            message: err.error
+        });
+    } else {
+        res.status(500).json({
+            result: "error",
+            message: "unable to retrieve ledger"
+        });
+    }
+}
 
-    function errorResponse(err) {
-        log.error(err.error || err);
-        if (err.code && err.code.toString()[0] === "4") {
-            res.status(err.code).json({
-                result: "error",
-                message: err.error
-            });
-        } else {
-            res.status(500).json({
-                result: "error",
-                message: "unable to retrieve ledger"
-            });
-        }
+app.get("/ledger/:index?", function (req, res, next) {
+
+    let index = req.params.index;
+
+    if (index) {
+        rippleClient.getLedgerByIndex(Number(index), (ledger, error) => {
+            if (error) {
+                errorResponse(res, error);
+            } else {
+                res.send(ledger);
+            }
+        });
+    } else {
+        rippleClient.getLedgerLast((ledger, error) => {
+            if (error) {
+                errorResponse(res, error);
+            } else {
+                res.send(ledger);
+            }
+        });
     }
 
-    let index = Number(req.params.index);
 
-    rippleClient.getLedgerByIndex(index, (ledger, error) => {
-        if (error) {
-            errorResponse(error);
-        } else {
-            ledger.result = "success";
-            res.send(ledger);
-        }
-    });
 });
 
 const host = config.get("proxy:host");
